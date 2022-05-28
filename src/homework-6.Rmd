@@ -423,8 +423,8 @@ collect_metrics(abalone_rf_tune) %>%
 
 
 ```{r}
-abalone_rf_final = finalize_workflow(abalone_rf_wflw, select_best(abalone_rf_tune)) 
-abalone_rf_fit = fit(abalone_rf_final, abalone_train) 
+abalone_rf_final <- finalize_workflow(abalone_rf_wflw, select_best(abalone_rf_tune)) 
+abalone_rf_fit <-  fit(abalone_rf_final, abalone_train) 
 ```
 
 ```{r}
