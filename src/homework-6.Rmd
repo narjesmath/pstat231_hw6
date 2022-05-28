@@ -324,12 +324,12 @@ The best model is the random forest model, with an AUC ROC of 0.727.
 Print the AUC value of your best-performing model on the testing set. Print the ROC curves. Finally, create and visualize a confusion matrix heat map.
 
 ```{r}
-rf_test_fit = augment(rf_fit, new_data = poke_test) #get predictions for test data
-roc_auc(rf_test_fit, truth = type_1, .pred_Bug, .pred_Fire, .pred_Grass, .pred_Normal, .pred_Water, .pred_Psychic) #print ROC AUC for test data
+rf_test_fit = augment(rf_fit, new_data = poke_rare_test) 
+roc_auc(rf_test_fit, truth = type_1, .pred_Bug, .pred_Fire, .pred_Grass, .pred_Normal, .pred_Water, .pred_Psychic) 
 ```
 
 ```{r}
-autoplot(roc_curve(rf_test_fit, truth = type_1, .pred_Bug, .pred_Fire, .pred_Grass, .pred_Normal, .pred_Water, .pred_Psychic)) #plot ROC curves for each class
+autoplot(roc_curve(rf_test_fit, truth = type_1, .pred_Bug, .pred_Fire, .pred_Grass, .pred_Normal, .pred_Water, .pred_Psychic)) 
 ```
 
 ```{r}
