@@ -290,7 +290,7 @@ autoplot(boost_tune_res)
 
 What do you observe? 
 
-ROC ACU peaks at around 400 trees and then slowly declines again.
+ROC AUC peaks at around 400 trees and then slowly declines again.
 
 
 What is the `roc_auc` of your best-performing boosted tree model on the folds? 
