@@ -222,7 +222,8 @@ rf_tune <- tune_grid(
   metrics = metric_set(roc_auc) 
   )
 
-
+("model-results/decision_tree_results")
+autoplot(decision_tree_results)
 autoplot(rf_tune) 
 ```
 
@@ -250,12 +251,15 @@ Create a variable importance plot, using `vip()`, with your best-performing rand
 Which variables were most useful? Which were least useful? Are these results what you expected, or not?
 
 ```{r}
-rf_final = finalize_workflow(class_rf_wflw, select_best(rf_tune)) 
-rf_fit = fit(rf_final, pok_rare_train)  
+rf_final <- finalize_workflow(class_rf_wflw, select_best(rf_tune)) 
 
- rf_fit %>% 
+rf_fit <- fit(rf_final, pok_rare_train)  
+
+ vip_rf <- rf_fit %>% 
   extract_fit_engine() %>%
   vip()
+ 
+ vip_rf
 ```
 From the above graph, special attack is the most important variable. Attack, speed,defense, hp,and special are equally as important. 
 
@@ -319,12 +323,12 @@ joined_models = full_join(models, boost_metrics)
 joined_models 
 ```   
 
-The best model is the random forest model, with an AUC ROC of 0.727.
+The best model is the random forest model, with an AUC ROC of 0.628.
 
 Print the AUC value of your best-performing model on the testing set. Print the ROC curves. Finally, create and visualize a confusion matrix heat map.
 
 ```{r}
-rf_test_fit = augment(rf_fit, new_data = poke_rare_test) 
+rf_test_fit = augment(rf_fit, new_data = pok_rare_test) 
 roc_auc(rf_test_fit, truth = type_1, .pred_Bug, .pred_Fire, .pred_Grass, .pred_Normal, .pred_Water, .pred_Psychic) 
 ```
 
@@ -371,11 +375,8 @@ folds = vfold_cv(abalone_train, v = 5, strata = age)
 abalone_recipe <-
   recipe(age ~ type + longest_shell + diameter + height + whole_weight + shucked_weight + viscera_weight + shell_weight, data = abalone_train) %>% 
   step_dummy(all_nominal_predictors()) %>% 
-  step_interact(terms = ~ type:shucked_weight) %>% 
-  step_interact(terms = ~ longest_shell:diameter) %>% 
-  step_interact(terms = ~ shucked_weight:shell_weight) %>% 
-  step_center(all_predictors()) %>% 
-  step_scale(all_predictors())
+   step_interact(terms = ~ type:shucked_weight + longest_shell:diameter + shucked_weight:shell_weight) %>% 
+  step_normalize(all_numeric_predictors()) #center &scale
 
 
 
@@ -387,6 +388,8 @@ abalone_rf <- rand_forest(mtry = tune(), trees = tune(), min_n = tune()) %>%
 abalone_rf_wflw = workflow() %>% 
   add_recipe(abalone_recipe) %>% 
   add_model(abalone_rf) 
+
+
 abalone_rf_grid <- grid_regular(
   mtry(range = c(1, 8)), 
   trees(range = c(10,2000)), 
@@ -403,12 +406,13 @@ abalone_rf_tune <- tune_grid(
   )
 ```
 
-```{r, include = FALSE}
-
+```{r}
+abalone_tree_results<- read_rds("model-results/abalone_tree_results")
 ```
 
 ```{r}
-autoplot(abalone_rf_tune) 
+# autoplot(abalone_rf_tune) 
+autoplot(abalone_tree_results) 
 ```
 
 ```{r}
