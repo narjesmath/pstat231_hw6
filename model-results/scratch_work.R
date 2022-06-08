@@ -10,7 +10,7 @@ library(randomForest)
 library(ranger) #for random forest
 library(xgboost)
 library(kableExtra)
-tidymodels_prefer()
+
 
 
 ## Tree-Based Models
@@ -242,7 +242,7 @@ set.seed(3435)
 abalone_split <- abalone_new%>% 
   initial_split(strata = age, prop = 0.7)
 abalone_train <- training(abalone_split)
-aalone_test <- testing(abalone_split)
+abalone_test <- testing(abalone_split)
 
 folds = vfold_cv(abalone_train, v = 5, strata = age) 
 
@@ -250,9 +250,10 @@ folds = vfold_cv(abalone_train, v = 5, strata = age)
 abalone_recipe <-
   recipe(age ~ type + longest_shell + diameter + height + whole_weight + shucked_weight + viscera_weight + shell_weight, data = abalone_train) %>% 
   step_dummy(all_nominal_predictors()) %>% 
-  step_interact(terms = ~ type:shucked_weight + longest_shell:diameter + shucked_weight:shell_weight) %>% 
-  step_normalize(all_numeric_predictors()) #center &scale
-
+  step_interact(terms = ~ starts_with("type"):shucked_weight +
+                  longest_shell:diameter + 
+                  shucked_weight:shell_weight) %>% 
+  step_normalize(all_predictors())
 
 
 abalone_rf <- rand_forest(mtry = tune(), trees = tune(), min_n = tune()) %>% 

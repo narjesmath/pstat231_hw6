@@ -212,7 +212,7 @@ Specify `roc_auc` as a metric. Tune the model and print an `autoplot()` of the r
 
 #we calculate `roc_auc` for classification
 
-```{r, eval=FALSE}
+```{r}
 rf_grid <- grid_regular(
   mtry(range = c(1, 8)), #set mtry to 1-8
   trees(range = c(100,200)), #set trees 100 to 200
@@ -231,11 +231,11 @@ rf_tune <- tune_grid(
 
 ```{r}
 
-decision_tree_results <- read_rds("decision_tree_results.rds")
-autoplot(decision_tree_results)
+# decision_tree_results <- read_rds("decision_tree_results.rds")
+# autoplot(decision_tree_results)
 
 
-# autoplot(rf_tune) 
+autoplot(rf_tune)
 ```
 
 What do you observe? What values of the hyperparameters seem to yield the best performance?
@@ -250,8 +250,9 @@ What is the `roc_auc` of your best-performing random forest model on the folds? 
 ```{r}
 rf_tree_metrics <- collect_metrics(rf_tune) %>% 
 arrange(desc((mean)))
-
+rf_tree_metrics
 best_complexity <- select_best(rf_tune)
+best_complexity 
 ```
 
 
@@ -301,8 +302,8 @@ boost_tune_res <- tune_grid(
   )
 
 
-boost_results <- read_rds("boost_results.rds")
-autoplot(boost_results)
+# boost_results <- read_rds("boost_results.rds")
+# autoplot(boost_results)
 
 autoplot(boost_tune_res) 
 ```
@@ -376,22 +377,22 @@ abalone_new <- abalone %>%
   mutate(age = 1.5 + rings) 
 
 
-set.seed(3435)
+set.seed(2000)
 abalone_split <- abalone_new%>% 
   initial_split(strata = age, prop = 0.7)
 abalone_train <- training(abalone_split)
-aalone_test <- testing(abalone_split)
+abalone_test <- testing(abalone_split)
 
 folds = vfold_cv(abalone_train, v = 5, strata = age) 
 
 
 abalone_recipe <-
   recipe(age ~ type + longest_shell + diameter + height + whole_weight + shucked_weight + viscera_weight + shell_weight, data = abalone_train) %>% 
-  step_dummy(all_nominal_predictors()) %>% 
-   step_interact(terms = ~ type:shucked_weight + longest_shell:diameter + shucked_weight:shell_weight) %>% 
-  step_normalize(all_numeric_predictors()) #center &scale
-
-
+  step_dummy(all_nominal_predictors()) %>%
+step_interact(terms = ~ starts_with("type"):shucked_weight +
+                  longest_shell:diameter + 
+                  shucked_weight:shell_weight) %>% 
+  step_normalize(all_predictors())
 
 abalone_rf <- rand_forest(mtry = tune(), trees = tune(), min_n = tune()) %>% 
   set_engine("ranger", importance = "impurity") %>% 
@@ -410,7 +411,7 @@ abalone_rf_grid <- grid_regular(
   levels = 5) 
 ```
 
-```{r, eval=FALSE}
+```{r}
 abalone_rf_tune <- tune_grid( 
   abalone_rf_wflw, 
   resamples = folds, 
@@ -420,13 +421,13 @@ abalone_rf_tune <- tune_grid(
 ```
 
 ```{r}
-abalone_results<- read_rds("abalone_results.rds")
-autoplot(abalone_results)
+# abalone_results<- read_rds("abalone_results.rds")
+# autoplot(abalone_results)
 ```
 
 ```{r}
-# autoplot(abalone_rf_tune) 
-autoplot(abalone_tree_results) 
+autoplot(abalone_rf_tune)
+# autoplot(abalone_tree_results) 
 ```
 
 ```{r}
@@ -450,4 +451,5 @@ augment(abalone_rf_fit, new_data = abalone_test) %>%
   rmse(truth = age, estimate = .pred) 
 ```
 
+Best rmse estimate is 2.25
 
